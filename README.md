@@ -29,7 +29,7 @@
  - Bugs with all vanilla maps, and you have to use a custom 57km*57km map.
 
 ## Issues
- - some simulation systems may not be working properly, eg Landvalue system.(I didn't change this system because I made a special version of the LV system)
+ - some simulation systems may not be working properly, eg Landvalue system.(I didn't change this system because I made a special version of my LV remake mod)
 
 ## Disclaimer
 
