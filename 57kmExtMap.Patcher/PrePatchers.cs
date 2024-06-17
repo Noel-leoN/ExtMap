@@ -97,6 +97,8 @@ namespace ExtMap
             
             ///CellMapSystem;
             ///not sure effect;
+            ///
+            /*
             TypeDefinition cellmapSystem = module.GetType("Game.Simulation", "CellMapSystem`1");
             logSource.LogInfo($"target class {cellmapSystem} for patching");
 
@@ -107,13 +109,13 @@ namespace ExtMap
                 // Modify the content of the static constructor
                 foreach (Instruction ins in cellmapsys_cctor.Body.Instructions)
                 {
-                    if (ins.OpCode.Name == "ldc.i4" && (float)ins.Operand == 14336f)
+                    if (ins.OpCode.Name == "ldc.i4" && (float)ins.Operand == 14336)
                     {
-                        ins.Operand = 57344f;
+                        ins.Operand = 57344;
                     }
                 }
                 // Add new instructions or logic as needed
-            }
+            }*/
 
         }//patch method;
 
