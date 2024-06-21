@@ -13,13 +13,14 @@ using Game.Citizens;
 using Game.City;
 using Game.Companies;
 using Game.Zones;
+using System;
 
 namespace ExtMap57km.Patches
 {
 
     public static class CellMapSystemRe
     {
-        public static readonly int kMapSize = 57344;       
+        public static readonly int kMapSize = 57344;
         public static float3 GetCellCenter(int index, int textureSize)
         {
             int num = index % textureSize;
@@ -58,6 +59,17 @@ namespace ExtMap57km.Patches
     [HarmonyPatch]
     internal static class AirPollutionSystemPatch
     {
+        [HarmonyPatch(typeof(AirPollutionSystem), nameof(AirPollutionSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            //int num = index % AirPollutionSystem.kTextureSize;
+            //int num2 = index / AirPollutionSystem.kTextureSize;
+            //int num3 = 57344 / AirPollutionSystem.kTextureSize;
+            //__result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
+            __result = CellMapSystemRe.GetCellCenter(index, AirPollutionSystem.kTextureSize);
+        }
+
         [HarmonyPatch(typeof(AirPollutionSystem), nameof(AirPollutionSystem.GetPollution))]
         [HarmonyPostfix]
         public static void GetPollution(ref AirPollution __result,float3 position, NativeArray<AirPollution> pollutionMap)
@@ -75,16 +87,16 @@ namespace ExtMap57km.Patches
             __result = result;
         }
 
-
-        [HarmonyPatch(typeof(AirPollutionSystem), nameof(AirPollutionSystem.GetCellCenter))]
-        [HarmonyPostfix]
-        public static void GetCellCenter(ref float3 __result,int index)
+        [HarmonyPatch(typeof(CellMapSystem<AirPollution>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<AirPollution> __instance, ref NativeArray<AirPollution> __result, bool readOnly, ref JobHandle dependencies)
         {
-            //int num = index % AirPollutionSystem.kTextureSize;
-            //int num2 = index / AirPollutionSystem.kTextureSize;
-            //int num3 = 57344 / AirPollutionSystem.kTextureSize;
-            //__result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-            __result = CellMapSystemRe.GetCellCenter(index, AirPollutionSystem.kTextureSize);
+            if (__instance.GetType().FullName == nameof(AirPollutionSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.AirPollutionSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
         }
 
         /*
@@ -99,6 +111,7 @@ namespace ExtMap57km.Patches
             __result = result;
         }*/
 
+
         [HarmonyPatch(typeof(CellMapSystem<AirPollution>), "GetData")]
         [HarmonyPrefix]
         public static bool GetData(CellMapSystem<AirPollution> __instance, ref CellMapData<AirPollution> __result, bool readOnly, ref JobHandle dependencies)
@@ -111,24 +124,13 @@ namespace ExtMap57km.Patches
             return true;
         }
 
-        [HarmonyPatch(typeof(CellMapSystem<AirPollution>), "GetMap")]
-        [HarmonyPrefix]
-        public static bool GetMap(CellMapSystem<AirPollution> __instance, ref NativeArray<AirPollution> __result, bool readOnly, ref JobHandle dependencies)
-        {
-            if (__instance.GetType().FullName == nameof(AirPollutionSystem))
-            {
-                __result = __instance.World.GetExistingSystemManaged<Systems.AirPollutionSystem>().GetMap(readOnly, out dependencies);
-                return false;
-            }
-            return true;
-        }
-
+        
+        //may not necessary if make ecs "postfix"(updateafter) of this sim system;下同；
         [HarmonyPatch(typeof(CellMapSystem<AirPollution>), "AddReader")]
         [HarmonyPrefix]
         public static bool AddReader(CellMapSystem<AirPollution> __instance, JobHandle jobHandle)
         {
-            string name = __instance.GetType().FullName;
-            if (name == nameof(AirPollutionSystem))
+            if (__instance.GetType().FullName == nameof(AirPollutionSystem))
             {
                 __instance.World.GetExistingSystemManaged<Systems.AirPollutionSystem>().AddReader(jobHandle);
                 return false;
@@ -136,11 +138,43 @@ namespace ExtMap57km.Patches
             return true;
         }
 
+        [HarmonyPatch(typeof(CellMapSystem<AirPollution>), "AddWriter")]
+        [HarmonyPrefix]
+        public static bool AddWriter(CellMapSystem<AirPollution> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(AirPollutionSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.AirPollutionSystem>().AddWriter(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
     }//airpollution system class;
 
+    //AvailabilityInfoToGridSystem
     [HarmonyPatch]
     internal static class AvailabilityInfoToGridSystemPatch
     {
+        /*
+        [HarmonyPatch(typeof(AvailabilityInfoToGridSystem), nameof(AvailabilityInfoToGridSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            int num = index % AvailabilityInfoToGridSystem.kTextureSize;
+            int num2 = index / AvailabilityInfoToGridSystem.kTextureSize;
+            int num3 = 57344 / AvailabilityInfoToGridSystem.kTextureSize;
+            __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
+        }*/
+
+        [HarmonyPatch(typeof(AvailabilityInfoToGridSystem), nameof(AvailabilityInfoToGridSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            __result = CellMapSystemRe.GetCellCenter(index, AvailabilityInfoToGridSystem.kTextureSize);
+        }
+
+
         [HarmonyPatch(typeof(AvailabilityInfoToGridSystem), nameof(AvailabilityInfoToGridSystem.GetAvailabilityInfo))]
         [HarmonyPostfix]
         public static void GetAvailabilityInfo(ref AvailabilityInfoCell __result,float3 position, NativeArray<AvailabilityInfoCell> AvailabilityInfoMap)
@@ -160,17 +194,7 @@ namespace ExtMap57km.Patches
             __result = result;
         }
 
-
-        [HarmonyPatch(typeof(AvailabilityInfoToGridSystem), nameof(AvailabilityInfoToGridSystem.GetCellCenter))]
-        [HarmonyPostfix]
-        public static void GetCellCenter(ref float3 __result, int index)
-        {
-            int num = index % AvailabilityInfoToGridSystem.kTextureSize;
-            int num2 = index / AvailabilityInfoToGridSystem.kTextureSize;
-            int num3 = 57344 / AvailabilityInfoToGridSystem.kTextureSize;
-            __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }
-
+        /*
         [HarmonyPatch(typeof(CellMapSystem<AvailabilityInfoCell>), nameof(CellMapSystem<AvailabilityInfoCell>.GetData))]
         [HarmonyPostfix]
         public static void GetData(ref CellMapData<AvailabilityInfoCell> __result, bool readOnly, ref JobHandle dependencies)
@@ -180,15 +204,46 @@ namespace ExtMap57km.Patches
             result.m_CellSize = __result.m_CellSize * 4;
             result.m_TextureSize = __result.m_TextureSize;
             __result = result;
-        }
+        }*/
 
-        [HarmonyPatch(typeof(CellMapSystem<AvailabilityInfoCell>), nameof(CellMapSystem<AvailabilityInfoCell>.AddReader))]
-        [HarmonyPostfix]
-        public static void AddReader(ref JobHandle jobHandle)
+        [HarmonyPatch(typeof(CellMapSystem<AvailabilityInfoCell>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<AvailabilityInfoCell> __instance, ref CellMapData<AvailabilityInfoCell> __result, bool readOnly, ref JobHandle dependencies)
         {
-            
+            if (__instance.GetType().FullName == nameof(AvailabilityInfoToGridSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<ExtMap57km.Systems.AvailabilityInfoToGridSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
         }
 
+
+        [HarmonyPatch(typeof(CellMapSystem<AvailabilityInfoCell>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<AvailabilityInfoCell> __instance, ref NativeArray<AvailabilityInfoCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(AvailabilityInfoToGridSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.AvailabilityInfoToGridSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+
+        [HarmonyPatch(typeof(CellMapSystem<AvailabilityInfoCell>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<AvailabilityInfoCell> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(AvailabilityInfoToGridSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.AvailabilityInfoToGridSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+        
     }//AvailabilityInfoToGridSystem class
 
     /// <summary>
@@ -209,6 +264,7 @@ namespace ExtMap57km.Patches
     [HarmonyPatch]
     internal static class BuildingPollutionAddSystemPatch
     {
+        //may not necessary if make ecs "postfix"(updateafter) of this sim system;
         [HarmonyPatch(typeof(BuildingPollutionAddSystem), nameof(BuildingPollutionAddSystem.GetBuildingPollution))]
         [HarmonyPostfix]
         public static void GetBuildingPollution(ref PollutionData __result,Entity prefab, bool destroyed, bool abandoned, bool isPark, float efficiency, DynamicBuffer<Renter> renters, DynamicBuffer<InstalledUpgrade> installedUpgrades, PollutionParameterData pollutionParameters, DynamicBuffer<CityModifier> cityModifiers, ref ComponentLookup<PrefabRef> prefabRefs, ref ComponentLookup<BuildingData> buildingDatas, ref ComponentLookup<SpawnableBuildingData> spawnableDatas, ref ComponentLookup<PollutionData> pollutionDatas, ref ComponentLookup<PollutionModifierData> pollutionModifierDatas, ref ComponentLookup<ZoneData> zoneDatas, ref BufferLookup<Employee> employees, ref BufferLookup<HouseholdCitizen> householdCitizens, ref ComponentLookup<Citizen> citizens)
@@ -271,6 +327,7 @@ namespace ExtMap57km.Patches
             }
             __result = componentData;
         }
+
     }//BuildingPollutionAddSystem class
 
 
@@ -297,7 +354,7 @@ namespace ExtMap57km.Patches
             __result = result;
         }
 
-
+        /*
         [HarmonyPatch(typeof(GroundPollutionSystem), nameof(GroundPollutionSystem.GetCellCenter))]
         [HarmonyPostfix]
         public static void GetCellCenter(ref float3 __result, int index)
@@ -306,53 +363,124 @@ namespace ExtMap57km.Patches
             int num2 = index / GroundPollutionSystem.kTextureSize;
             int num3 = 57344 / GroundPollutionSystem.kTextureSize;
             __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
+        }*/
+
+        [HarmonyPatch(typeof(GroundPollutionSystem), nameof(GroundPollutionSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            //int num = index % AirPollutionSystem.kTextureSize;
+            //int num2 = index / AirPollutionSystem.kTextureSize;
+            //int num3 = 57344 / AirPollutionSystem.kTextureSize;
+            //__result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
+            __result = CellMapSystemRe.GetCellCenter(index, GroundPollutionSystem.kTextureSize);
         }
 
+        [HarmonyPatch(typeof(CellMapSystem<GroundPollution>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<GroundPollution> __instance, ref NativeArray<GroundPollution> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(GroundPollutionSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.GroundPollutionSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<GroundPollution>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<GroundPollution> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(GroundPollutionSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.GroundPollutionSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
+        /*
         [HarmonyPatch(typeof(CellMapSystem<GroundPollution>), nameof(CellMapSystem<GroundPollution>.GetData))]
         [HarmonyPostfix]
         public static void GetData(ref CellMapData<GroundPollution> __result, bool readOnly, ref JobHandle dependencies)
         {
             __result.m_CellSize *= 4;
+        }*/
+
+
+        [HarmonyPatch(typeof(CellMapSystem<GroundPollution>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<GroundPollution> __instance, ref CellMapData<GroundPollution> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(GroundPollutionSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<ExtMap57km.Systems.GroundPollutionSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
         }
+
+
     }//class
 
     [HarmonyPatch]
     internal static class GroundWaterSystemPatch
     {
-        //[HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.GetGroundWater))]
-        //[HarmonyPostfix]
-        //public static void GetGroundWater(ref GroundWater __result, float3 position, NativeArray<GroundWater> groundWaterMap)
-        //{
-       ///未完成，参考NoisePollution;
-            /*
-
-            float2 @float = CellMapSystem<GroundWater>.GetCellCoords(position, Systems.CellMapSystem<GroundWater>.kMapSize, Systems.GroundWaterSystem.kTextureSize) - new float2(0.5f, 0.5f);
+        [HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.GetGroundWater), new Type[] { typeof(float3), typeof(NativeArray<GroundWater>) })]
+        [HarmonyPostfix]
+        public static void GetGroundWater(ref GroundWater __result, float3 position, NativeArray<GroundWater> groundWaterMap)
+        {
+            float2 @float = Systems.CellMapSystem<GroundWater>.GetCellCoords(position, Systems.CellMapSystem<GroundWater>.kMapSize, GroundWaterSystem.kTextureSize) - new float2(0.5f, 0.5f);
             int2 cell = new int2(Mathf.FloorToInt(@float.x), Mathf.FloorToInt(@float.y));
             int2 cell2 = new int2(cell.x + 1, cell.y);
             int2 cell3 = new int2(cell.x, cell.y + 1);
             int2 cell4 = new int2(cell.x + 1, cell.y + 1);
-
-            GroundWater groundWater = GroundWaterSystem.GetGroundWater(groundWaterMap, cell);
-            GroundWater groundWater2 = Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell2);
-            GroundWater groundWater3 = Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell3);
-            GroundWater groundWater4 = Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell4);
+            GroundWater groundWater = ExtMap57km.Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell);
+            GroundWater groundWater2 = ExtMap57km.Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell2);
+            GroundWater groundWater3 = ExtMap57km.Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell3);
+            GroundWater groundWater4 = ExtMap57km.Systems.GroundWaterSystem.GetGroundWater(groundWaterMap, cell4);
             float sx = @float.x - (float)cell.x;
             float sy = @float.y - (float)cell.y;
             GroundWater result = default(GroundWater);
-            result.m_Amount = (short)math.round(Systems.GroundWaterSystem.Bilinear(groundWater.m_Amount, groundWater2.m_Amount, groundWater3.m_Amount, groundWater4.m_Amount, sx, sy));
-            result.m_Polluted = (short)math.round(Systems.GroundWaterSystem.Bilinear(groundWater.m_Polluted, groundWater2.m_Polluted, groundWater3.m_Polluted, groundWater4.m_Polluted, sx, sy));
-            result.m_Max = (short)math.round(Systems.GroundWaterSystem.Bilinear(groundWater.m_Max, groundWater2.m_Max, groundWater3.m_Max, groundWater4.m_Max, sx, sy));
-            __result = result;*/
-        //}
+            result.m_Amount = (short)math.round(ExtMap57km.Systems.GroundWaterSystem.Bilinear(groundWater.m_Amount, groundWater2.m_Amount, groundWater3.m_Amount, groundWater4.m_Amount, sx, sy));
+            result.m_Polluted = (short)math.round(ExtMap57km.Systems.GroundWaterSystem.Bilinear(groundWater.m_Polluted, groundWater2.m_Polluted, groundWater3.m_Polluted, groundWater4.m_Polluted, sx, sy));
+            result.m_Max = (short)math.round(ExtMap57km.Systems.GroundWaterSystem.Bilinear(groundWater.m_Max, groundWater2.m_Max, groundWater3.m_Max, groundWater4.m_Max, sx, sy));
+            __result = result;
+
+        }
 
         [HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.TryGetCell))]
         [HarmonyPostfix]
-        public static void TryGetCell(ref bool __result, float3 position, out int2 cell)
+        public static void TryGetCell(ref bool __result, float3 position, ref int2 cell)
         {
             cell = Systems.CellMapSystem<GroundWater>.GetCell(position, Systems.CellMapSystem<GroundWater>.kMapSize, Systems.GroundWaterSystem.kTextureSize);
             __result = Systems.GroundWaterSystem.IsValidCell(cell);
         }
 
+        [HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.IsValidCell))]
+        [HarmonyPostfix]
+        public static void IsValidCell(ref bool __result, int2 cell)
+        {
+            if (cell.x >= 0 && cell.y >= 0 && cell.x < GroundWaterSystem.kTextureSize)
+            {
+                __result = cell.y < GroundWaterSystem.kTextureSize;
+            }
+            __result = false;
+        }
+
+        [HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            //int num = index % AirPollutionSystem.kTextureSize;
+            //int num2 = index / AirPollutionSystem.kTextureSize;
+            //int num3 = 57344 / AirPollutionSystem.kTextureSize;
+            //__result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
+            __result = CellMapSystemRe.GetCellCenter(index, GroundWaterSystem.kTextureSize);
+        }
+
+        /*
         [HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.GetCellCenter))]
         [HarmonyPostfix]
         public static void GetCellCenter(ref float3 __result, int index)
@@ -361,30 +489,15 @@ namespace ExtMap57km.Patches
             int num2 = index / GroundWaterSystem.kTextureSize;
             int num3 = 57344 / GroundWaterSystem.kTextureSize;
             __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }
-
-
-        [HarmonyPatch(typeof(CellMapSystem<GroundWater>), nameof(CellMapSystem<GroundWater>.GetCellCoords))]
-        [HarmonyPrefix]
-        public static void GetCellCoords(ref float2 __result, float3 position, int mapSize, int textureSize)
-        {
-            mapSize *= 4;
-        }
-
-        [HarmonyPatch(typeof(CellMapSystem<GroundWater>), nameof(CellMapSystem<GroundWater>.GetData))]
-        [HarmonyPostfix]
-        public static void GetData(ref CellMapData<GroundWater> __result, bool readOnly, ref JobHandle dependencies)
-        {
-            __result.m_CellSize *= 4;
-        }
+        }*/
 
         [HarmonyPatch(typeof(GroundWaterSystem), nameof(GroundWaterSystem.ConsumeGroundWater))]
         [HarmonyPostfix]
         public static void ConsumeGroundWater(float3 position, NativeArray<GroundWater> groundWaterMap, int amount)
         {
-            /*
+            
             Unity.Assertions.Assert.IsTrue(amount >= 0);
-            float2 @float = CellMapSystem<GroundWater>.GetCellCoords(position, CellMapSystem<GroundWater>.kMapSize, GroundWaterSystem.kTextureSize) - new float2(0.5f, 0.5f);
+            float2 @float = Systems.CellMapSystem<GroundWater>.GetCellCoords(position, Systems.CellMapSystem<GroundWater>.kMapSize, GroundWaterSystem.kTextureSize) - new float2(0.5f, 0.5f);
             int2 cell = new int2(Mathf.FloorToInt(@float.x), Mathf.FloorToInt(@float.y));
             int2 cell2 = new int2(cell.x + 1, cell.y);
             int2 cell3 = new int2(cell.x, cell.y + 1);
@@ -426,44 +539,96 @@ namespace ExtMap57km.Patches
                     gw.Consume((int)num6);
                     totalConsumed -= num6;
                 }
+            }
         }
+
+        [HarmonyPatch(typeof(CellMapSystem<GroundWater>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<GroundWater> __instance, ref NativeArray<GroundWater> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(GroundWaterSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.GroundWaterSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }            
+
+        [HarmonyPatch(typeof(CellMapSystem<GroundWater>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<GroundWater> __instance, ref CellMapData<GroundWater> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(GroundWaterSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<ExtMap57km.Systems.GroundWaterSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
         }
+
+        //may not necessary if make ecs "postfix"(updateafter) of this sim system;下同；
+        [HarmonyPatch(typeof(CellMapSystem<GroundWater>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<GroundWater> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(GroundWaterSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.GroundWaterSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<GroundWater>), "AddWriter")]
+        [HarmonyPrefix]
+        public static bool AddWriter(CellMapSystem<GroundWater> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(GroundWaterSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.GroundWaterSystem>().AddWriter(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
+    }//class
 
     [HarmonyPatch]
     internal static class NaturalResourceSystemPatch
-    {
-        /*[HarmonyPatch(typeof(CellMapSystem<NaturalResourceCell>), nameof(CellMapSystem<NaturalResourceCell>.GetCellCenter))]
-        [HarmonyPostfix]
-        public static void GetCellCenter(ref float3 __result, int index)
-        {
-            int num = index % NaturalResourceSystem.kTextureSize;
-            int num2 = index / NaturalResourceSystem.kTextureSize;
-            int num3 = 57344 / NaturalResourceSystem.kTextureSize;
-            __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }*/
-
-
-        [HarmonyPatch(typeof(CellMapSystem<NaturalResourceCell>), nameof(CellMapSystem<NaturalResourceCell>.GetCellCoords))]
-        [HarmonyPrefix]
-        public static void GetCellCoords(ref float2 __result, float3 position, int mapSize, int textureSize)
-        {
-            mapSize *= 4;
-        }
-
-        [HarmonyPatch(typeof(CellMapSystem<NaturalResourceCell>), nameof(CellMapSystem<NaturalResourceCell>.GetData))]
-        [HarmonyPostfix]
-        public static void GetData(ref CellMapData<NaturalResourceCell> __result, bool readOnly, ref JobHandle dependencies)
-        {
-            __result.m_CellSize *= 4;
-        }
-
+    {       
         [HarmonyPatch(typeof(NaturalResourceSystem), nameof(NaturalResourceSystem.ResourceAmountToArea))]
         [HarmonyPostfix]
-        public static void ResourceAmountToArea(ref float __result,float amount)
+        public static void ResourceAmountToArea(ref float __result, float amount)
         {
             __result *= 16;
         }
-    }
+
+        [HarmonyPatch(typeof(CellMapSystem<NaturalResourceCell>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<NaturalResourceCell> __instance, ref CellMapData<NaturalResourceCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(NaturalResourceSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<ExtMap57km.Systems.NaturalResourceSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        //may not necessary if make ecs "postfix"(updateafter) of this sim system;下同；
+        [HarmonyPatch(typeof(CellMapSystem<NaturalResourceCell>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<NaturalResourceCell> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(NaturalResourceSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.NaturalResourceSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+        
+    }//NatualResourceSystem class;
 
     [HarmonyPatch]
     internal static class NoisePollutionSystemPatch
@@ -472,18 +637,18 @@ namespace ExtMap57km.Patches
         [HarmonyPostfix]
         public static void GetCellCenter(ref float3 __result, int index)
         {
+            __result = CellMapSystemRe.GetCellCenter(index, Systems.NoisePollutionSystem.kTextureSize);
+        }
+
+        /*
+        [HarmonyPatch(typeof(NoisePollutionSystem), nameof(NoisePollutionSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
             int num = index % NoisePollutionSystem.kTextureSize;
             int num2 = index / NoisePollutionSystem.kTextureSize;
             int num3 = 57344 / NoisePollutionSystem.kTextureSize;
             __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }
-
-        /*
-        [HarmonyPatch(typeof(CellMapSystem<NoisePollution>), nameof(CellMapSystem<NoisePollution>.GetData))]
-        [HarmonyPostfix]
-        public static void GetData(ref CellMapData<NoisePollution> __result, bool readOnly, ref JobHandle dependencies)
-        {
-            __result.m_CellSize *= 4;
         }*/
 
         [HarmonyPatch(typeof(NoisePollutionSystem), nameof(NoisePollutionSystem.GetPollution))]
@@ -541,7 +706,19 @@ namespace ExtMap57km.Patches
             return true;
         }
 
-    }//class;
+        [HarmonyPatch(typeof(CellMapSystem<NoisePollution>), "AddWriter")]
+        [HarmonyPrefix]
+        public static bool AddWriter(CellMapSystem<NoisePollution> __instance, JobHandle jobHandle)
+        {
+            if (__instance.GetType().FullName == nameof(NoisePollutionSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.NoisePollutionSystem>().AddWriter(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
+    }//NoisePollutionSystem class;
 
 
     [HarmonyPatch]
@@ -551,25 +728,7 @@ namespace ExtMap57km.Patches
         [HarmonyPostfix]
         public static void GetCellCenter(ref float3 __result, int index)
         {
-            int num = index % NoisePollutionSystem.kTextureSize;
-            int num2 = index / NoisePollutionSystem.kTextureSize;
-            int num3 = 57344 / NoisePollutionSystem.kTextureSize;
-            __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }
-
-
-        [HarmonyPatch(typeof(CellMapSystem<PopulationCell>), nameof(CellMapSystem<PopulationCell>.GetCellCoords))]
-        [HarmonyPrefix]
-        public static void GetCellCoords(ref float2 __result, float3 position, int mapSize, int textureSize)
-        {
-            mapSize *= 4;
-        }
-
-        [HarmonyPatch(typeof(CellMapSystem<PopulationCell>), nameof(CellMapSystem<PopulationCell>.GetData))]
-        [HarmonyPostfix]
-        public static void GetData(ref CellMapData<PopulationCell> __result, bool readOnly, ref JobHandle dependencies)
-        {
-            __result.m_CellSize *= 4;
+            __result = CellMapSystemRe.GetCellCenter(index, Systems.PopulationToGridSystem.kTextureSize);
         }
 
         [HarmonyPatch(typeof(PopulationToGridSystem), nameof(PopulationToGridSystem.GetPopulation))]
@@ -591,6 +750,46 @@ namespace ExtMap57km.Patches
             __result = result;
         }
 
+        [HarmonyPatch(typeof(CellMapSystem<PopulationCell>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<PopulationCell> __instance, ref CellMapData<PopulationCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(PopulationToGridSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.PopulationToGridSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<PopulationCell>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<PopulationCell> __instance, ref NativeArray<PopulationCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(PopulationToGridSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.PopulationToGridSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<PopulationCell>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<PopulationCell> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == nameof(PopulationToGridSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.PopulationToGridSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
+    }//class;
+
     [HarmonyPatch]
     internal static class SoilWaterSystemPatch
     {
@@ -598,25 +797,7 @@ namespace ExtMap57km.Patches
         [HarmonyPostfix]
         public static void GetCellCenter(ref float3 __result, int index)
         {
-            int num = index % SoilWaterSystem.kTextureSize;
-            int num2 = index / SoilWaterSystem.kTextureSize;
-            int num3 = 57344 / SoilWaterSystem.kTextureSize;
-            __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }
-
-
-        [HarmonyPatch(typeof(CellMapSystem<SoilWater>), nameof(CellMapSystem<SoilWater>.GetCellCoords))]
-        [HarmonyPrefix]
-        public static void GetCellCoords(ref float2 __result, float3 position, int mapSize, int textureSize)
-        {
-            mapSize *= 4;
-        }
-
-        [HarmonyPatch(typeof(CellMapSystem<SoilWater>), nameof(CellMapSystem<SoilWater>.GetData))]
-        [HarmonyPostfix]
-        public static void GetData(ref CellMapData<SoilWater> __result, bool readOnly, ref JobHandle dependencies)
-        {
-            __result.m_CellSize *= 4;
+            __result = CellMapSystemRe.GetCellCenter(index, Systems.SoilWaterSystem.kTextureSize);
         }
 
         [HarmonyPatch(typeof(SoilWaterSystem), nameof(SoilWaterSystem.GetSoilWater))]
@@ -637,33 +818,239 @@ namespace ExtMap57km.Patches
             result.m_Amount = (short)Mathf.RoundToInt(math.lerp(math.lerp(x, y, cellCoords.x - (float)cell.x), math.lerp(x2, y2, cellCoords.x - (float)cell.x), cellCoords.y - (float)cell.y));
             __result = result;
         }
+
+        [HarmonyPatch(typeof(CellMapSystem<SoilWater>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<SoilWater> __instance, ref NativeArray<SoilWater> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(SoilWaterSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.SoilWaterSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<SoilWater>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<SoilWater> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == nameof(SoilWaterSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.SoilWaterSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
     }//class;
 
     [HarmonyPatch]
     internal static class TelecomCoverageSystemPatch
-    {
-        
-        [HarmonyPatch(typeof(CellMapSystem<TelecomCoverage>), nameof(CellMapSystem<TelecomCoverage>.GetData))]
-        [HarmonyPostfix]
-        public static void GetData(ref CellMapData<TelecomCoverage> __result, bool readOnly, ref JobHandle dependencies)
+    { 
+        [HarmonyPatch(typeof(CellMapSystem<TelecomCoverage>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<TelecomCoverage> __instance, JobHandle jobHandle)
         {
-            __result.m_CellSize *= 4;
+            string name = __instance.GetType().FullName;
+            if (name == nameof(TelecomCoverageSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.TelecomCoverageSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
         }
 
-        
+        [HarmonyPatch(typeof(CellMapSystem<TelecomCoverage>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<TelecomCoverage> __instance, ref CellMapData<TelecomCoverage> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(TelecomCoverageSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.TelecomCoverageSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
     }//class;
 
     [HarmonyPatch]
-    internal static class WindSystemPatch
+    internal static class TerrainAttractivenessSystemPatch
     {
-
-        [HarmonyPatch(typeof(CellMapSystem<Wind>), nameof(CellMapSystem<Wind>.GetData))]
+        [HarmonyPatch(typeof(TerrainAttractivenessSystem), nameof(TerrainAttractivenessSystem.GetCellCenter))]
         [HarmonyPostfix]
-        public static void GetData(ref CellMapData<Wind> __result, bool readOnly, ref JobHandle dependencies)
+        public static void GetCellCenter(ref float3 __result, int index)
         {
-            __result.m_CellSize *= 4;
+            __result = CellMapSystemRe.GetCellCenter(index, Systems.TerrainAttractivenessSystem.kTextureSize);
         }
 
+        [HarmonyPatch(typeof(TerrainAttractivenessSystem), nameof(TerrainAttractivenessSystem.EvaluateAttractiveness),new Type[] {typeof(float),typeof(TerrainAttractiveness),typeof(AttractivenessParameterData) })]
+        [HarmonyPostfix]
+        public static void EvaluateAttractiveness(ref float __result, float terrainHeight, TerrainAttractiveness attractiveness, AttractivenessParameterData parameters)
+        {
+            float num = parameters.m_ForestEffect * attractiveness.m_ForestBonus;
+            float num2 = parameters.m_ShoreEffect * attractiveness.m_ShoreBonus;
+            float num3 = math.min(parameters.m_HeightBonus.z, math.max(0f, terrainHeight - parameters.m_HeightBonus.x) * parameters.m_HeightBonus.y);
+            __result = num + num2 + num3;
+        }
+
+        [HarmonyPatch(typeof(TerrainAttractivenessSystem), nameof(TerrainAttractivenessSystem.EvaluateAttractiveness), new Type[] {typeof(float3),typeof(CellMapData<TerrainAttractiveness>),typeof(TerrainHeightData),typeof(AttractivenessParameterData),typeof(NativeArray<int>) })]
+        [HarmonyPostfix]
+        public static void EvaluateAttractiveness(ref float __result, float3 position, CellMapData<TerrainAttractiveness> data, TerrainHeightData heightData, AttractivenessParameterData parameters, NativeArray<int> factors)
+        {
+            float num = TerrainUtils.SampleHeight(ref heightData, position);
+            TerrainAttractiveness attractiveness = TerrainAttractivenessSystem.GetAttractiveness(position, data.m_Buffer);
+            float num2 = parameters.m_ForestEffect * attractiveness.m_ForestBonus;
+            AttractionSystem.SetFactor(factors, AttractionSystem.AttractivenessFactor.Forest, num2);
+            float num3 = parameters.m_ShoreEffect * attractiveness.m_ShoreBonus;
+            AttractionSystem.SetFactor(factors, AttractionSystem.AttractivenessFactor.Beach, num3);
+            float num4 = math.min(parameters.m_HeightBonus.z, math.max(0f, num - parameters.m_HeightBonus.x) * parameters.m_HeightBonus.y);
+            AttractionSystem.SetFactor(factors, AttractionSystem.AttractivenessFactor.Height, num4);
+            __result = num2 + num3 + num4;
+        }
+
+        [HarmonyPatch(typeof(TerrainAttractivenessSystem), nameof(TerrainAttractivenessSystem.GetAttractiveness))]
+        [HarmonyPostfix]
+        public static void GetAttractiveness(ref TerrainAttractiveness __result, float3 position, NativeArray<TerrainAttractiveness> attractivenessMap)
+        {
+            TerrainAttractiveness result = default(TerrainAttractiveness);
+            int2 cell = Systems.CellMapSystem<TerrainAttractiveness>.GetCell(position, CellMapSystem<TerrainAttractiveness>.kMapSize, TerrainAttractivenessSystem.kTextureSize);
+            float2 cellCoords = Systems.CellMapSystem<TerrainAttractiveness>.GetCellCoords(position, Systems.CellMapSystem<TerrainAttractiveness>.kMapSize, TerrainAttractivenessSystem.kTextureSize);
+            if (cell.x < 0 || cell.x >= TerrainAttractivenessSystem.kTextureSize || cell.y < 0 || cell.y >= TerrainAttractivenessSystem.kTextureSize)
+            {
+                __result = result;
+            }
+            TerrainAttractiveness terrainAttractiveness = attractivenessMap[cell.x + TerrainAttractivenessSystem.kTextureSize * cell.y];
+            TerrainAttractiveness terrainAttractiveness2 = ((cell.x < TerrainAttractivenessSystem.kTextureSize - 1) ? attractivenessMap[cell.x + 1 + TerrainAttractivenessSystem.kTextureSize * cell.y] : default(TerrainAttractiveness));
+            TerrainAttractiveness terrainAttractiveness3 = ((cell.y < TerrainAttractivenessSystem.kTextureSize - 1) ? attractivenessMap[cell.x + TerrainAttractivenessSystem.kTextureSize * (cell.y + 1)] : default(TerrainAttractiveness));
+            TerrainAttractiveness terrainAttractiveness4 = ((cell.x < TerrainAttractivenessSystem.kTextureSize - 1 && cell.y < TerrainAttractivenessSystem.kTextureSize - 1) ? attractivenessMap[cell.x + 1 + TerrainAttractivenessSystem.kTextureSize * (cell.y + 1)] : default(TerrainAttractiveness));
+            result.m_ForestBonus = (short)Mathf.RoundToInt(math.lerp(math.lerp(terrainAttractiveness.m_ForestBonus, terrainAttractiveness2.m_ForestBonus, cellCoords.x - (float)cell.x), math.lerp(terrainAttractiveness3.m_ForestBonus, terrainAttractiveness4.m_ForestBonus, cellCoords.x - (float)cell.x), cellCoords.y - (float)cell.y));
+            result.m_ShoreBonus = (short)Mathf.RoundToInt(math.lerp(math.lerp(terrainAttractiveness.m_ShoreBonus, terrainAttractiveness2.m_ShoreBonus, cellCoords.x - (float)cell.x), math.lerp(terrainAttractiveness3.m_ShoreBonus, terrainAttractiveness4.m_ShoreBonus, cellCoords.x - (float)cell.x), cellCoords.y - (float)cell.y));
+            __result = result;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<TerrainAttractiveness>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<TerrainAttractiveness> __instance, ref CellMapData<TerrainAttractiveness> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(TerrainAttractivenessSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.TerrainAttractivenessSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<TerrainAttractiveness>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<TerrainAttractiveness> __instance, ref NativeArray<TerrainAttractiveness> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(TerrainAttractivenessSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.TerrainAttractivenessSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<TerrainAttractiveness>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<TerrainAttractiveness> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == nameof(TerrainAttractivenessSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.TerrainAttractivenessSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+    }//class;
+
+    [HarmonyPatch]
+    internal static class TrafficAmbienceSystemPatch
+    {
+        [HarmonyPatch(typeof(TrafficAmbienceSystem), nameof(TrafficAmbienceSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            __result = CellMapSystemRe.GetCellCenter(index, Systems.TrafficAmbienceSystem.kTextureSize);
+        }
+
+        [HarmonyPatch(typeof(TrafficAmbienceSystem), nameof(TrafficAmbienceSystem.GetTrafficAmbience2))]
+        [HarmonyPostfix]
+        public static void GetTrafficAmbience2(ref TrafficAmbienceCell __result,float3 position, NativeArray<TrafficAmbienceCell> trafficAmbienceMap, float maxPerCell)
+        {
+            TrafficAmbienceCell result = default(TrafficAmbienceCell);
+            int2 cell = Systems.CellMapSystem<TrafficAmbienceCell>.GetCell(position, Systems.CellMapSystem<TrafficAmbienceCell>.kMapSize, TrafficAmbienceSystem.kTextureSize);
+            float num = 0f;
+            float num2 = 0f;
+            for (int i = cell.x - 2; i <= cell.x + 2; i++)
+            {
+                for (int j = cell.y - 2; j <= cell.y + 2; j++)
+                {
+                    if (i >= 0 && i < TrafficAmbienceSystem.kTextureSize && j >= 0 && j < TrafficAmbienceSystem.kTextureSize)
+                    {
+                        int index = i + TrafficAmbienceSystem.kTextureSize * j;
+                        float num3 = math.max(1f, math.distancesq(TrafficAmbienceSystem.GetCellCenter(index), position));
+                        num += math.min(maxPerCell, trafficAmbienceMap[index].m_Traffic) / num3;
+                        num2 += 1f / num3;
+                    }
+                }
+            }
+            result.m_Traffic = num / num2;
+            __result = result;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<TrafficAmbienceCell>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<TrafficAmbienceCell> __instance, ref NativeArray<TrafficAmbienceCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(TrafficAmbienceSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.TrafficAmbienceSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<TrafficAmbienceCell>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<TrafficAmbienceCell> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == nameof(TrafficAmbienceSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.TrafficAmbienceSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+    }//class;
+
+    [HarmonyPatch]
+    internal static class WindSimulationSystemPatch
+    {
+        [HarmonyPatch(typeof(WindSimulationSystem), "SetWind")]
+        [HarmonyPrefix]
+        public static bool SetWind(WindSimulationSystem __instance, float2 direction, float pressure)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == nameof(WindSimulationSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.WindSimulationSystem>().SetWind(direction, pressure);
+                return false;
+            }
+            return true;
+
+        }
+    }//class;
+
+    
+    [HarmonyPatch]
+    internal static class WindSystemPatch
+    {
         [HarmonyPatch(typeof(WindSystem), nameof(WindSystem.GetWind))]
         [HarmonyPostfix]
         public static void GetWind(ref Wind __result, float3 position, NativeArray<Wind> windMap)
@@ -678,7 +1065,47 @@ namespace ExtMap57km.Patches
             __result = result;
         }
 
+        [HarmonyPatch(typeof(CellMapSystem<Wind>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<Wind> __instance, ref CellMapData<Wind> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(WindSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.WindSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<Wind>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<Wind> __instance, ref NativeArray<Wind> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            if (__instance.GetType().FullName == nameof(WindSystem))
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.WindSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<Wind>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<Wind> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == nameof(WindSystem))
+            {
+                __instance.World.GetExistingSystemManaged<Systems.WindSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
     }//class;
+
+
 
 
 }//namespace

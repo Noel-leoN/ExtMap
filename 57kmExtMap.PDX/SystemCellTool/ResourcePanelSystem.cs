@@ -16,9 +16,8 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Scripting;
-using Game;
-using Game.UI;
 using Game.UI.Editor;
+using Game.UI;
 
 namespace ExtMap57km.Systems
 {

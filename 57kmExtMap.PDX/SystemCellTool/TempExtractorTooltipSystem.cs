@@ -17,7 +17,6 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine.Scripting;
-using Game;
 using Game.UI.Tooltip;
 using Game.UI;
 

@@ -30,6 +30,12 @@
 	  <Compile Remove="Patches\DevUIPatches.cs" />
 	  <Compile Remove="Patches\TerrainSysPatch.cs" />
 	  <Compile Remove="Setting.cs" />
+	  <Compile Remove="SystemCellSim\BuildableAreaDebugSystem.cs" />
+	  <Compile Remove="SystemCellSim\LandValueSystem.cs" />
+	  <Compile Remove="SystemCellSim\PollutionDebugSystem.cs" />
+	  <Compile Remove="SystemCellSim\WindDebugSystem.cs" />
+	  <Compile Remove="SystemCellSim\ZoningInfoSystem.cs" />
+	  <Compile Remove="SystemMap\TerrainSystem.cs" />
 	  <Compile Remove="SystemsCell\BuildableAreaDebugSystem.cs" />
 	  <Compile Remove="SystemsCell\CitizenHappinessSystem.cs" />
 	  <Compile Remove="SystemsCell\PollutionDebugSystem.cs" />
@@ -42,6 +48,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Reference Include="Colossal.AssetPipeline">
+			<Private>false</Private>
+		</Reference>
+		
 		<Reference Include="Game">
 			<Private>false</Private>
 		</Reference>

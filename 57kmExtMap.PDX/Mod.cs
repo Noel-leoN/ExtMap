@@ -150,6 +150,8 @@ namespace ExtMap57km
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.AirPollutionSystem>();
             updateSystem.UpdateAfter<Systems.AirPollutionSystem,AirPollutionSystem>(SystemUpdatePhase.GameSimulation);
 
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.AvailabilityInfoToGridSystem>();
+            updateSystem.UpdateAfter<Systems.AvailabilityInfoToGridSystem, AvailabilityInfoToGridSystem>(SystemUpdatePhase.GameSimulation);
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.BuildingPollutionAddSystem>();
             updateSystem.UpdateAfter<Systems.BuildingPollutionAddSystem,BuildingPollutionAddSystem>(SystemUpdatePhase.GameSimulation);
 
@@ -212,10 +214,18 @@ namespace ExtMap57km
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.NetPollutionSystem>();
             updateSystem.UpdateAfter<Systems.NetPollutionSystem, NetPollutionSystem>(SystemUpdatePhase.GameSimulation);
 
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.ObjectPolluteSystem>();
+            updateSystem.UpdateAfter<Systems.NetPollutionSystem, ObjectPolluteSystem>(SystemUpdatePhase.GameSimulation);
+
             //not sure which mode;
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.SpawnableAmbienceSystem>();
             updateSystem.UpdateAfter<Systems.SpawnableAmbienceSystem,SpawnableAmbienceSystem>(SystemUpdatePhase.GameSimulation);
-            
+
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.TelecomPreviewSystem>();
+            //updateSystem.UpdateAfter<Systems.TelecomPreviewSystem, Game.Tools.TelecomPreviewSystem>();
+
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.TempExtractorTooltipSystem>();
+            updateSystem.UpdateAfter<Systems.TempExtractorTooltipSystem, Game.UI.Tooltip.TempExtractorTooltipSystem>(SystemUpdatePhase.UITooltip);
 
         }
 
