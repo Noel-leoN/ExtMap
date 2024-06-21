@@ -20,7 +20,6 @@ namespace ExtMap57km.Patches
     public static class CellMapSystemRe
     {
         public static readonly int kMapSize = 57344;       
-
         public static float3 GetCellCenter(int index, int textureSize)
         {
             int num = index % textureSize;
@@ -427,9 +426,8 @@ namespace ExtMap57km.Patches
                     gw.Consume((int)num6);
                     totalConsumed -= num6;
                 }
-            }*/
         }
-    }//class
+        }
 
     [HarmonyPatch]
     internal static class NaturalResourceSystemPatch
@@ -478,14 +476,6 @@ namespace ExtMap57km.Patches
             int num2 = index / NoisePollutionSystem.kTextureSize;
             int num3 = 57344 / NoisePollutionSystem.kTextureSize;
             __result = new float3(-0.5f * 57344 + ((float)num + 0.5f) * (float)num3, 0f, -0.5f * 57344 + ((float)num2 + 0.5f) * (float)num3);
-        }
-
-
-        [HarmonyPatch(typeof(CellMapSystem<NoisePollution>), nameof(CellMapSystem<NoisePollution>.GetCellCoords))]
-        [HarmonyPrefix]
-        public static void GetCellCoords(ref float2 __result, float3 position, int mapSize, int textureSize)
-        {
-            mapSize *= 4;
         }
 
         /*
@@ -600,7 +590,6 @@ namespace ExtMap57km.Patches
             result.m_Population = math.lerp(math.lerp(population, y, cellCoords.x - (float)cell.x), math.lerp(x, y2, cellCoords.x - (float)cell.x), cellCoords.y - (float)cell.y);
             __result = result;
         }
-    }//class;
 
     [HarmonyPatch]
     internal static class SoilWaterSystemPatch
