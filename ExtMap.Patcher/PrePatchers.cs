@@ -53,6 +53,13 @@ namespace ExtMap
                     {
                         ins.Operand = 57344f;
                     }
+
+                    //test!
+                    //if (ins.OpCode.Name == "ldc.i4" && (int)ins.Operand == 4096)
+                    //{
+                    //    ins.Operand = 16384;
+                    //}
+
                 }
                 // Add new instructions or logic as needed
             }            

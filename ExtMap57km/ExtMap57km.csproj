@@ -20,6 +20,7 @@
 	<ItemGroup>
 	  <Compile Remove="Patches\DevUIPatches.cs" />
 	  <Compile Remove="Setting.cs" />
+	  <Compile Remove="SystemCellTool\TempExtractorTooltipSystem.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

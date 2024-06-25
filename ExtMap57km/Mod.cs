@@ -228,8 +228,8 @@ namespace ExtMap57km
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.TelecomPreviewSystem>();
             //updateSystem.UpdateAfter<Systems.TelecomPreviewSystem, Game.Tools.TelecomPreviewSystem>();
 
-            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.TempExtractorTooltipSystem>();
-            updateSystem.UpdateAfter<Systems.TempExtractorTooltipSystem, Game.UI.Tooltip.TempExtractorTooltipSystem>(SystemUpdatePhase.UITooltip);
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.TempExtractorTooltipSystem>();
+            //updateSystem.UpdateAfter<Systems.TempExtractorTooltipSystem, Game.UI.Tooltip.TempExtractorTooltipSystem>(SystemUpdatePhase.UITooltip);
 
         }
 
