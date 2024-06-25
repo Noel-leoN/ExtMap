@@ -1,4 +1,4 @@
-# Cities Skylines 2 Extended Map Mod
+# Cities Skylines 2 Extended Map Mod (Beta)
 
 ## Introduction
 
@@ -6,22 +6,33 @@
 
 ## Requirements
 
-- Game version 1.1.12f1.
+- Game version 1.1.5f1.
 - BepInEx 5.4.21
+
+## Install
+
+- install BepInEx 5.4.21 to you game root, run the game once then exit.
+- put ExtMap.PDX to your game local pdx mod folder.
+- put ExtMap.Patch to you BepInEx\patchers folder.
 
 ## Usage
 
-- put ExtMap.PDX to your game local pdx mod folder.
-- put ExtMap.Patch to you BepInEx\patchers folder.
+- create map in game editor by import 57.344km heightmap and 229.376km worldmap.
 
 ## Compatibility
 
 - Modifies:
-  - most of the game systems which cellmapsystem are referencedeference.
-  - map-related systmes.
+  - most of the game systems which cellmapsystem is referenced.
+  - maptile system\areatool system.
   - water system.
+- Most simulation systems use the postfix/updateafter method, which generally does not encounter serious conflicts.
 
 ## Changelog
+
+- 1.0.5
+  - Compatibility with game version 1.1.5f1.
+  - fix some simulation systems.
+
 - 1.0.0
   - Original version.  
   
@@ -29,11 +40,11 @@
  - Bugs with all vanilla maps, and you have to use a custom 57km*57km map.
 
 ## Issues
- - some simulation systems may not be working properly, eg Landvalue system.(I didn't change this system because I made a special version of the LV system)
+ - some simulation systems may not be working properly.If you found issues please report in github,thank you.
 
 ## Disclaimer
 
-- highly experimental. SAVE YOUR GAME before use this. Please use at your own risk.
+- it's experimental. SAVE YOUR GAME before use this. Please use at your own risk.
 
 ## Credits
 

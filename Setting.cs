@@ -6,9 +6,9 @@ using Game.UI;
 using Game.UI.Widgets;
 using System.Collections.Generic;
 
-namespace _57kmExtMap.PDX
+namespace ExtMap57km
 {
-    [FileLocation(nameof(_57kmExtMap.PDX))]
+    [FileLocation(nameof(ExtMap57km))]
     [SettingsUIGroupOrder(kButtonGroup, kToggleGroup, kSliderGroup, kDropdownGroup)]
     [SettingsUIShowGroupName(kButtonGroup, kToggleGroup, kSliderGroup, kDropdownGroup)]
     public class Setting : ModSetting
@@ -46,6 +46,8 @@ namespace _57kmExtMap.PDX
 
         [SettingsUISection(kSection, kDropdownGroup)]
         public SomeEnum EnumDropdown { get; set; } = SomeEnum.Value1;
+
+
 
         public DropdownItem<int>[] GetIntDropdownItems()
         {
@@ -87,7 +89,7 @@ namespace _57kmExtMap.PDX
         {
             return new Dictionary<string, string>
             {
-                { m_Setting.GetSettingsLocaleID(), "Mod settings sample" },
+                { m_Setting.GetSettingsLocaleID(), "ExtMap57km" },
                 { m_Setting.GetOptionTabLocaleID(Setting.kSection), "Main" },
 
                 { m_Setting.GetOptionGroupLocaleID(Setting.kButtonGroup), "Buttons" },
@@ -117,6 +119,7 @@ namespace _57kmExtMap.PDX
                 { m_Setting.GetEnumValueLocaleID(Setting.SomeEnum.Value1), "Value 1" },
                 { m_Setting.GetEnumValueLocaleID(Setting.SomeEnum.Value2), "Value 2" },
                 { m_Setting.GetEnumValueLocaleID(Setting.SomeEnum.Value3), "Value 3" },
+
             };
         }
 

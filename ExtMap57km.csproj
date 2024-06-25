@@ -4,18 +4,11 @@
 		<OutputType>Library</OutputType>
 		<TargetFramework>net472</TargetFramework>
 		<Configurations>Debug;Release</Configurations>
+
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<LangVersion>9.0</LangVersion>
+		<Version>1.0.3</Version>
 		
-		<!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
-		<CustomManagedPath>C:\Games\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed</CustomManagedPath>
-		
-		<!--Path to the text file where PDX account data is stored which is required to publish the mod-->
-		<!--Keep it outside of project in order to not commit it or share accidentally-->
-		<!--The file should contain 2 lines:-->
-		<!--Your.PDX@Account.login-->
-		<!--Your-PDX-Account-Pa$$word-->
-		<PDXAccountDataPath>$(USERPROFILE)\Desktop\pdx_account.txt</PDXAccountDataPath>
 		
 		<!--The file where mod information which is required for publishing mod on PDX mods are stored-->
 		<PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
@@ -25,30 +18,21 @@
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
 	<Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 	<ItemGroup>
-	  <Compile Remove="Patches\CellMapSysPatch - org.cs" />
-	  <Compile Remove="Patches\CellMapSysRe.cs" />
 	  <Compile Remove="Patches\DevUIPatches.cs" />
-	  <Compile Remove="Patches\TerrainSysPatch.cs" />
 	  <Compile Remove="Setting.cs" />
-	  <Compile Remove="SystemCellSim\BuildableAreaDebugSystem.cs" />
-	  <Compile Remove="SystemCellSim\LandValueSystem.cs" />
-	  <Compile Remove="SystemCellSim\PollutionDebugSystem.cs" />
-	  <Compile Remove="SystemCellSim\WindDebugSystem.cs" />
-	  <Compile Remove="SystemCellSim\ZoningInfoSystem.cs" />
-	  <Compile Remove="SystemMap\TerrainSystem.cs" />
-	  <Compile Remove="SystemsCell\BuildableAreaDebugSystem.cs" />
-	  <Compile Remove="SystemsCell\CitizenHappinessSystem.cs" />
-	  <Compile Remove="SystemsCell\PollutionDebugSystem.cs" />
-	  <Compile Remove="SystemsCell\ResourcePanelSystem.cs" />
-	  <Compile Remove="SystemsCell\TempExtractorTooltipSystem.cs" />
-	  <Compile Remove="SystemsCell\WindDebugSystem.cs" />
-	  <Compile Remove="SystemsCell\ZoningInfoSystem.cs" />
-	  <Compile Remove="SystemsMap\ApplyBrushesSystem.cs" />
-	  <Compile Remove="SystemsMap\TerrainSystem.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Reference Include="Colossal.AssetPipeline">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Mathematics">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Colossal.Collections">
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="UnityEngine.AudioModule">
 			<Private>false</Private>
 		</Reference>
 		
@@ -73,6 +57,9 @@
 		<Reference Include="Colossal.Localization">
 			<Private>false</Private>
 		</Reference>
+		<Reference Include="Unity.InputSystem">
+			<Private>false</Private>
+		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<Private>false</Private>
 		</Reference>
@@ -86,16 +73,6 @@
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.Mathematics">
-			<Private>false</Private>
-		</Reference>
-		
-		<Reference Include="Colossal.Mathematics">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="Colossal.Collections">
-			<Private>false</Private>
-		</Reference>
-		<Reference Include="UnityEngine.AudioModule">
 			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
@@ -120,6 +97,5 @@
 	<ItemGroup>
 		<PackageReference Include="Lib.Harmony" Version="2.2.2" />
 	</ItemGroup>
-
 
 </Project>

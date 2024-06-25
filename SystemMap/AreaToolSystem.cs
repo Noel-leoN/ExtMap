@@ -1411,11 +1411,11 @@ namespace ExtMap57km.Systems
 						CreationDefinition component = default(CreationDefinition);
 						component.m_Prefab = this.m_Prefab;
 						///vanilla;
-						//float2 @float = new float2(23f, 23f) * 311.65216f;
+						//float2 @float = new float2(23f, 23f) * 311.65216f;//v1.1.5=311.652161f;
 						//bounds.min = (float2)@int * 623.3043f - @float;  
 						//bounds.max = (float2)(@int + 1) * 623.3043f - @float;
                         ///
-                        float2 @float = new float2(92f, 92f) * 311.65216f;
+                        float2 @float = new float2(92f, 92f) * 311.652161f;
                         bounds.min = (float2)@int * 623.3043f - @float;
                         bounds.max = (float2)(@int + 1) * 623.3043f - @float;
 						///

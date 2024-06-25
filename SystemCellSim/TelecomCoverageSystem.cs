@@ -19,8 +19,8 @@ using Game.Simulation;
 
 namespace ExtMap57km.Systems
 {
-	//[CompilerGenerated]
-	public partial class TelecomCoverageSystem : CellMapSystem<TelecomCoverage>, IJobSerializable
+    //[CompilerGenerated]
+    public partial class TelecomCoverageSystem : CellMapSystem<TelecomCoverage>, IJobSerializable
 	{
 		private struct CellDensityData
 		{
@@ -384,9 +384,8 @@ namespace ExtMap57km.Systems
 						Game.Buildings.TelecomFacility telecomFacility = this.m_TelecomFacilityData[temp.m_Original];
 						if (!this.m_Preview || (telecomFacility.m_Flags & TelecomFacilityFlags.HasCoverage) != 0)
 						{
-							//result = BuildingUtils.GetEfficiency(bufferData);//
-                            result = GetEfficiency(bufferData);
-                        }
+							result = GetEfficiency(bufferData);//mod
+						}
 					}
 				}
 				else if (efficiencyAccessor.Length != 0)
@@ -394,9 +393,8 @@ namespace ExtMap57km.Systems
 					Game.Buildings.TelecomFacility telecomFacility2 = telecomFacilities[i];
 					if (!this.m_Preview || (telecomFacility2.m_Flags & TelecomFacilityFlags.HasCoverage) != 0)
 					{
-						//result = BuildingUtils.GetEfficiency(efficiencyAccessor[i]);//
-                        result = GetEfficiency(efficiencyAccessor[i]);
-                    }
+						result = GetEfficiency(efficiencyAccessor[i]);//mod
+					}
 				}
 				return result;
 			}
@@ -521,8 +519,7 @@ namespace ExtMap57km.Systems
 						DynamicBuffer<HouseholdCitizen> dynamicBuffer = bufferAccessor[i];
 						if (dynamicBuffer.Length != 0 && this.m_TransformData.HasComponent(propertyRenter.m_Property))
 						{
-							Transform transform = this.m_TransformData[propertyRenter.m_Property];
-							this.AddDensity(densityData, dynamicBuffer.Length, transform.m_Position);
+							this.AddDensity(position: this.m_TransformData[propertyRenter.m_Property].m_Position, densityData: densityData, density: dynamicBuffer.Length);
 						}
 					}
 					for (int j = 0; j < bufferAccessor2.Length; j++)
@@ -531,8 +528,7 @@ namespace ExtMap57km.Systems
 						DynamicBuffer<Employee> dynamicBuffer2 = bufferAccessor2[j];
 						if (dynamicBuffer2.Length != 0 && this.m_TransformData.HasComponent(propertyRenter2.m_Property))
 						{
-							Transform transform2 = this.m_TransformData[propertyRenter2.m_Property];
-							this.AddDensity(densityData, dynamicBuffer2.Length, transform2.m_Position);
+							this.AddDensity(position: this.m_TransformData[propertyRenter2.m_Property].m_Position, densityData: densityData, density: dynamicBuffer2.Length);
 						}
 					}
 					return;
@@ -546,20 +542,20 @@ namespace ExtMap57km.Systems
 				BufferAccessor<Employee> bufferAccessor4 = chunk.GetBufferAccessor(ref this.m_EmployeeType);
 				for (int k = 0; k < bufferAccessor3.Length; k++)
 				{
-					Transform transform3 = nativeArray2[k];
+					Transform transform = nativeArray2[k];
 					DynamicBuffer<HouseholdCitizen> dynamicBuffer3 = bufferAccessor3[k];
 					if (dynamicBuffer3.Length != 0)
 					{
-						this.AddDensity(densityData, dynamicBuffer3.Length, transform3.m_Position);
+						this.AddDensity(densityData, dynamicBuffer3.Length, transform.m_Position);
 					}
 				}
 				for (int l = 0; l < bufferAccessor4.Length; l++)
 				{
-					Transform transform4 = nativeArray2[l];
+					Transform transform2 = nativeArray2[l];
 					DynamicBuffer<Employee> dynamicBuffer4 = bufferAccessor4[l];
 					if (dynamicBuffer4.Length != 0)
 					{
-						this.AddDensity(densityData, dynamicBuffer4.Length, transform4.m_Position);
+						this.AddDensity(densityData, dynamicBuffer4.Length, transform2.m_Position);
 					}
 				}
 			}

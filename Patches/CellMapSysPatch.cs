@@ -281,7 +281,7 @@ namespace ExtMap57km.Patches
                     SpawnableBuildingData componentData2;
                     if (componentData.m_ScaleWithRenters && !isPark && renters.IsCreated)
                     {
-                        ExtMap57km.Systems.BuildingPollutionAddSystem.CountRenters(out var count, out var education, renters, ref employees, ref householdCitizens, ref citizens, ignoreEmployees: false);
+                        CountRenters(out var count, out var education, renters, ref employees, ref householdCitizens, ref citizens, ignoreEmployees: false);
                         float num = (spawnableDatas.TryGetComponent(prefab, out componentData2) ? ((float)(int)componentData2.m_Level) : 5f);
                         float num2 = ((count > 0) ? (5f * (float)count / (num + 0.5f * (float)(education / count))) : 0f);
                         componentData.m_GroundPollution *= num2;
@@ -322,10 +322,45 @@ namespace ExtMap57km.Patches
             }
             if ((abandoned || isPark) && renters.IsCreated)
             {
-                Systems.BuildingPollutionAddSystem.CountRenters(out var count2, out var _, renters, ref employees, ref householdCitizens, ref citizens, ignoreEmployees: true);
+                CountRenters(out var count2, out var _, renters, ref employees, ref householdCitizens, ref citizens, ignoreEmployees: true);
                 componentData.m_NoisePollution += count2 * pollutionParameters.m_HomelessNoisePollution;
             }
             __result = componentData;
+        }
+
+        private static void CountRenters(out int count, out int education, DynamicBuffer<Renter> renters, ref BufferLookup<Employee> employees, ref BufferLookup<HouseholdCitizen> householdCitizens, ref ComponentLookup<Citizen> citizens, bool ignoreEmployees)
+        {
+            count = 0;
+            education = 0;
+            foreach (Renter item in renters)
+            {
+                if (householdCitizens.TryGetBuffer(item, out var bufferData))
+                {
+                    foreach (HouseholdCitizen item2 in bufferData)
+                    {
+                        if (citizens.TryGetComponent(item2, out var componentData))
+                        {
+                            education += componentData.GetEducationLevel();
+                            count++;
+                        }
+                    }
+                }
+                else
+                {
+                    if (ignoreEmployees || !employees.TryGetBuffer(item, out var bufferData2))
+                    {
+                        continue;
+                    }
+                    foreach (Employee item3 in bufferData2)
+                    {
+                        if (citizens.TryGetComponent(item3.m_Worker, out var componentData2))
+                        {
+                            education += componentData2.GetEducationLevel();
+                            count++;
+                        }
+                    }
+                }
+            }
         }
 
     }//BuildingPollutionAddSystem class
@@ -1105,6 +1140,65 @@ namespace ExtMap57km.Patches
 
     }//class;
 
+
+    [HarmonyPatch]
+    internal static class LandValueSystemPatch
+    {
+        [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "AddReader")]
+        [HarmonyPrefix]
+        public static bool AddReader(CellMapSystem<LandValueCell> __instance, JobHandle jobHandle)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == "Game.Simulation.LandValueSystem")
+            {
+                __instance.World.GetExistingSystemManaged<Systems.LandValueSystem>().AddReader(jobHandle);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "GetData")]
+        [HarmonyPrefix]
+        public static bool GetData(CellMapSystem<LandValueCell> __instance, ref CellMapData<LandValueCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == "Game.Simulation.LandValueSystem")
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.LandValueSystem>().GetData(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CellMapSystem<LandValueCell>), "GetMap")]
+        [HarmonyPrefix]
+        public static bool GetMap(CellMapSystem<LandValueCell> __instance, ref NativeArray<LandValueCell> __result, bool readOnly, ref JobHandle dependencies)
+        {
+            string name = __instance.GetType().FullName;
+            if (name == "Game.Simulation.LandValueSystem")
+            {
+                __result = __instance.World.GetExistingSystemManaged<Systems.LandValueSystem>().GetMap(readOnly, out dependencies);
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(LandValueSystem), nameof(LandValueSystem.GetCellCenter))]
+        [HarmonyPostfix]
+        public static void GetCellCenter(ref float3 __result, int index)
+        {
+            __result = CellMapSystemRe.GetCellCenter(index, Systems.LandValueSystem.kTextureSize);
+        }
+
+        [HarmonyPatch(typeof(LandValueSystem), nameof(LandValueSystem.GetCellIndex))]
+        [HarmonyPostfix]
+        public static void GetCellIndex(ref int __result, float3 pos)
+        {
+            __result = Systems.LandValueSystem.GetCellIndex(pos);
+        }
+
+
+    }//LV class;
 
 
 

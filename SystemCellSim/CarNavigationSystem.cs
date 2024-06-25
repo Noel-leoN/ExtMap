@@ -29,11 +29,11 @@ using Game.Simulation;
 //better diable original system;
 namespace ExtMap57km.Systems
 {
-	//[CompilerGenerated]
-	public partial class CarNavigationSystem : GameSystemBase
-	{
-		//[CompilerGenerated]
-		public partial class Actions : GameSystemBase
+    //[CompilerGenerated]
+    public partial class CarNavigationSystem : GameSystemBase
+    {
+        //[CompilerGenerated]
+        public partial class Actions : GameSystemBase
 		{
 			private struct TypeHandle
 			{
@@ -391,7 +391,7 @@ namespace ExtMap57km.Systems
 						{
 							moving = nativeArray3[i];
 						}
-						CarNavigationHelpers.CurrentLaneCache currentLaneCache = new CarNavigationHelpers.CurrentLaneCache(ref currentLane, blockedLanes, this.m_PrefabRefData, this.m_MovingObjectSearchTree);
+						CarNavigationHelpers.CurrentLaneCache currentLaneCache = new CarNavigationHelpers.CurrentLaneCache(ref currentLane, blockedLanes, this.m_EntityStorageInfoLookup, this.m_MovingObjectSearchTree);
 						this.UpdateOutOfControl(entity, transform, objectGeometryData, ref carNavigation, ref currentLane, ref blocker, ref pathOwner, navigationLanes, pathElements, blockedLanes, nativeList);
 						currentLaneCache.CheckChanges(entity, ref currentLane, nativeList, this.m_LaneObjectBuffer, this.m_LaneObjects, transform, moving, carNavigation, objectGeometryData);
 						nativeArray6[i] = carNavigation;
@@ -438,7 +438,7 @@ namespace ExtMap57km.Systems
 						{
 							this.UpdateCarLimits(ref prefabCarData, bufferAccessor3[j]);
 						}
-						CarNavigationHelpers.CurrentLaneCache currentLaneCache2 = new CarNavigationHelpers.CurrentLaneCache(ref currentLane2, blockedLanes2, this.m_PrefabRefData, this.m_MovingObjectSearchTree);
+						CarNavigationHelpers.CurrentLaneCache currentLaneCache2 = new CarNavigationHelpers.CurrentLaneCache(ref currentLane2, blockedLanes2, this.m_EntityStorageInfoLookup, this.m_MovingObjectSearchTree);
 						int priority = VehicleUtils.GetPriority(car);
 						Odometer odometer = default(Odometer);
 						if (flag)
@@ -487,7 +487,7 @@ namespace ExtMap57km.Systems
 					DynamicBuffer<PathElement> pathElements3 = bufferAccessor2[k];
 					DynamicBuffer<BlockedLane> blockedLanes3 = this.m_BlockedLanes[entity3];
 					ObjectGeometryData objectGeometryData3 = this.m_PrefabObjectGeometryData[prefabRef3.m_Prefab];
-					CarNavigationHelpers.CurrentLaneCache currentLaneCache3 = new CarNavigationHelpers.CurrentLaneCache(ref currentLane3, blockedLanes3, this.m_PrefabRefData, this.m_MovingObjectSearchTree);
+					CarNavigationHelpers.CurrentLaneCache currentLaneCache3 = new CarNavigationHelpers.CurrentLaneCache(ref currentLane3, blockedLanes3, this.m_EntityStorageInfoLookup, this.m_MovingObjectSearchTree);
 					this.UpdateStopped(transform3, ref currentLane3, ref blocker3, ref pathOwner3, navigationLanes3, pathElements3);
 					currentLaneCache3.CheckChanges(entity3, ref currentLane3, default(NativeList<BlockedLane>), this.m_LaneObjectBuffer, this.m_LaneObjects, transform3, default(Moving), navigation2, objectGeometryData3);
 					nativeArray5[k] = currentLane3;
@@ -718,7 +718,7 @@ namespace ExtMap57km.Systems
 			private void TryFindCurrentLane(ref CarCurrentLane currentLane, Game.Objects.Transform transform, Moving moving)
 			{
 				float num = 4f / 15f;
-				currentLane.m_LaneFlags &= ~(Game.Vehicles.CarLaneFlags.Obsolete | Game.Vehicles.CarLaneFlags.TurnLeft | Game.Vehicles.CarLaneFlags.TurnRight);
+				currentLane.m_LaneFlags &= ~(Game.Vehicles.CarLaneFlags.TransformTarget | Game.Vehicles.CarLaneFlags.ParkingSpace | Game.Vehicles.CarLaneFlags.Obsolete | Game.Vehicles.CarLaneFlags.TurnLeft | Game.Vehicles.CarLaneFlags.TurnRight | Game.Vehicles.CarLaneFlags.Area);
 				currentLane.m_Lane = Entity.Null;
 				currentLane.m_ChangeLane = Entity.Null;
 				float3 @float = transform.m_Position + moving.m_Velocity * (num * 2f);
@@ -1355,7 +1355,7 @@ namespace ExtMap57km.Systems
 				}
 				blocker.m_Blocker = laneIterator.m_Blocker;
 				blocker.m_Type = laneIterator.m_BlockerType;
-				blocker.m_MaxSpeed = (byte)math.clamp(Mathf.RoundToInt(laneIterator.m_MaxSpeed * 2.2949998f), 0, 255);
+				blocker.m_MaxSpeed = (byte)math.clamp(Mathf.RoundToInt(laneIterator.m_MaxSpeed * 2.29499984f), 0, 255);
 			}
 
 			private void UpdateTrailer(Entity entity, Game.Objects.Transform transform, ObjectGeometryData prefabObjectGeometryData, Entity nextLane, float2 nextPosition, bool forceNext, ref CarTrailerLane trailerLane)
@@ -1438,9 +1438,9 @@ namespace ExtMap57km.Systems
 				VehicleUtils.GetDrivingStyle(this.m_SimulationFrame, pseudoRandomSeed, out var safetyTime);
 				if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.Connection) != 0)
 				{
-					prefabCarData.m_MaxSpeed = 277.77777f;
-					prefabCarData.m_Acceleration = 277.77777f;
-					prefabCarData.m_Braking = 277.77777f;
+					prefabCarData.m_MaxSpeed = 277.777771f;
+					prefabCarData.m_Acceleration = 277.777771f;
+					prefabCarData.m_Braking = 277.777771f;
 				}
 				else
 				{
@@ -1552,11 +1552,20 @@ namespace ExtMap57km.Systems
 						goto IL_07c5;
 					}
 					navigation.m_TargetPosition.y = TerrainUtils.SampleHeight(ref this.m_TerrainHeightData, navigation.m_TargetPosition);
-					laneIterator.IterateTarget(navigation.m_TargetPosition, 11.111112f);
+					laneIterator.IterateTarget(navigation.m_TargetPosition, 11.1111116f);
 					navigation.m_MaxSpeed = laneIterator.m_MaxSpeed;
 					blocker.m_Blocker = Entity.Null;
 					blocker.m_Type = BlockerType.None;
 					blocker.m_MaxSpeed = byte.MaxValue;
+				}
+				goto IL_0802;
+				IL_07c5:
+				navigation.m_MaxSpeed = laneIterator.m_MaxSpeed;
+				this.CheckBlocker(ref currentLane, ref blocker, ref laneIterator);
+				if (laneIterator.m_TempBuffer.IsCreated)
+				{
+					tempBuffer = laneIterator.m_TempBuffer;
+					tempBuffer.Clear();
 				}
 				goto IL_0802;
 				IL_05e3:
@@ -1570,10 +1579,10 @@ namespace ExtMap57km.Systems
 						{
 							if ((carNavigationLane2.m_Flags & Game.Vehicles.CarLaneFlags.Connection) != 0)
 							{
-								laneIterator.m_PrefabCar.m_MaxSpeed = 277.77777f;
-								laneIterator.m_PrefabCar.m_Acceleration = 277.77777f;
-								laneIterator.m_PrefabCar.m_Braking = 277.77777f;
-								laneIterator.m_SpeedRange = new Bounds1(0f, 277.77777f);
+								laneIterator.m_PrefabCar.m_MaxSpeed = 277.777771f;
+								laneIterator.m_PrefabCar.m_Acceleration = 277.777771f;
+								laneIterator.m_PrefabCar.m_Braking = 277.777771f;
+								laneIterator.m_SpeedRange = new Bounds1(0f, 277.777771f);
 							}
 							else
 							{
@@ -1613,15 +1622,6 @@ namespace ExtMap57km.Systems
 					break;
 				}
 				goto IL_07c5;
-				IL_07c5:
-				navigation.m_MaxSpeed = laneIterator.m_MaxSpeed;
-				this.CheckBlocker(ref currentLane, ref blocker, ref laneIterator);
-				if (laneIterator.m_TempBuffer.IsCreated)
-				{
-					tempBuffer = laneIterator.m_TempBuffer;
-					tempBuffer.Clear();
-				}
-				goto IL_0802;
 				IL_0802:
 				float num5 = math.select(prefabCarData.m_PivotOffset, 0f - prefabCarData.m_PivotOffset, flag2);
 				float3 position = transform.m_Position;
@@ -1635,7 +1635,7 @@ namespace ExtMap57km.Systems
 				float num8 = num7;
 				if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.Area) != 0)
 				{
-					float brakingDistance = VehicleUtils.GetBrakingDistance(prefabCarData, math.min(prefabCarData.m_MaxSpeed, 11.111112f), num);
+					float brakingDistance = VehicleUtils.GetBrakingDistance(prefabCarData, math.min(prefabCarData.m_MaxSpeed, 11.1111116f), num);
 					num8 = math.max(num7, brakingDistance + 1f + num5);
 					num6 = math.select(num6, 0f, currentLane.m_ChangeProgress != 0f);
 				}
@@ -1738,8 +1738,18 @@ namespace ExtMap57km.Systems
 						}
 						else if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.TransformTarget) != 0)
 						{
-							navigation.m_TargetRotation = default(quaternion);
-							if (this.MoveTarget(position, ref navigation.m_TargetPosition, num7, currentLane.m_Lane))
+							bool flag3 = false;
+							if ((currentLane.m_LaneFlags & Game.Vehicles.CarLaneFlags.ResetSpeed) != 0)
+							{
+								quaternion targetRotation = this.CalculateNavigationRotation(currentLane.m_Lane, navigationLanes);
+								flag3 = !targetRotation.Equals(navigation.m_TargetRotation);
+								navigation.m_TargetRotation = targetRotation;
+							}
+							else
+							{
+								navigation.m_TargetRotation = default(quaternion);
+							}
+							if (this.MoveTarget(position, ref navigation.m_TargetPosition, num7, currentLane.m_Lane) || flag3)
 							{
 								break;
 							}
@@ -1898,7 +1908,7 @@ namespace ExtMap57km.Systems
 						navigation.m_MaxSpeed = vehicleCollisionIterator2.m_MaxSpeed;
 						blocker.m_Blocker = vehicleCollisionIterator2.m_Blocker;
 						blocker.m_Type = vehicleCollisionIterator2.m_BlockerType;
-						blocker.m_MaxSpeed = (byte)math.clamp(Mathf.RoundToInt(vehicleCollisionIterator2.m_MaxSpeed * 2.2949998f), 0, 255);
+						blocker.m_MaxSpeed = (byte)math.clamp(Mathf.RoundToInt(vehicleCollisionIterator2.m_MaxSpeed * 2.29499984f), 0, 255);
 					}
 					navigation.m_MaxSpeed = math.min(navigation.m_MaxSpeed, math.distance(transform.m_Position.xz, navigation.m_TargetPosition.xz) / num);
 				}
@@ -1946,6 +1956,68 @@ namespace ExtMap57km.Systems
 						currentLane.m_LaneFlags |= Game.Vehicles.CarLaneFlags.CanReverse;
 					}
 				}
+			}
+
+			private quaternion CalculateNavigationRotation(Entity sourceLocation, DynamicBuffer<CarNavigationLane> navigationLanes)
+			{
+				float3 @float = default(float3);
+				bool flag = false;
+				if (this.m_TransformData.TryGetComponent(sourceLocation, out var componentData))
+				{
+					@float = componentData.m_Position;
+					flag = true;
+				}
+				for (int i = 0; i < navigationLanes.Length; i++)
+				{
+					CarNavigationLane carNavigationLane = navigationLanes[i];
+					if (this.m_TransformData.TryGetComponent(carNavigationLane.m_Lane, out componentData))
+					{
+						if (flag)
+						{
+							float3 value = componentData.m_Position - @float;
+							if (MathUtils.TryNormalize(ref value))
+							{
+								return quaternion.LookRotationSafe(value, math.up());
+							}
+						}
+						else
+						{
+							@float = componentData.m_Position;
+							flag = true;
+						}
+					}
+					else
+					{
+						if (!this.m_CurveData.TryGetComponent(carNavigationLane.m_Lane, out var componentData2))
+						{
+							continue;
+						}
+						float3 float2 = MathUtils.Position(componentData2.m_Bezier, carNavigationLane.m_CurvePosition.x);
+						if (flag)
+						{
+							float3 value2 = float2 - @float;
+							if (MathUtils.TryNormalize(ref value2))
+							{
+								return quaternion.LookRotationSafe(value2, math.up());
+							}
+						}
+						else
+						{
+							@float = float2;
+							flag = true;
+						}
+						if (carNavigationLane.m_CurvePosition.x != carNavigationLane.m_CurvePosition.y)
+						{
+							float3 float3 = MathUtils.Tangent(componentData2.m_Bezier, carNavigationLane.m_CurvePosition.x);
+							float3 = math.select(float3, -float3, carNavigationLane.m_CurvePosition.y < carNavigationLane.m_CurvePosition.x);
+							if (MathUtils.TryNormalize(ref float3))
+							{
+								return quaternion.LookRotationSafe(float3, math.up());
+							}
+						}
+					}
+				}
+				return default(quaternion);
 			}
 
 			private bool IsLit(Entity lane)
@@ -2768,7 +2840,7 @@ namespace ExtMap57km.Systems
 		[Preserve]
 		protected override void OnUpdate()
 		{
-			uint index = this.m_SimulationSystem.frameIndex % 16;
+			uint index = this.m_SimulationSystem.frameIndex % 16u;
 			this.m_VehicleQuery.ResetFilter();
 			this.m_VehicleQuery.SetSharedComponentFilter(new UpdateFrame(index));
 			this.m_Actions.m_LaneReservationQueue = new NativeQueue<CarNavigationHelpers.LaneReservation>(Allocator.TempJob);

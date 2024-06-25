@@ -22,7 +22,6 @@ using Game.Simulation;
 namespace ExtMap57km.Systems
 {
 	//[CompilerGenerated]
-	//需要重写系统；
 	public partial class BuildingPollutionAddSystem : GameSystemBase
 	{
 		private struct PollutionItem
@@ -581,7 +580,7 @@ namespace ExtMap57km.Systems
 				PollutionData pollutionData = default(PollutionData);
 				pollutionData.m_GroundPollution = 0f;
 				pollutionData.m_AirPollution = 0f;
-				pollutionData.m_NoisePollution = 5f * (float)(buildingData.m_LotSize.x * buildingData.m_LotSize.y) * pollutionParameters.m_AbandonedNoisePollutionMultiplier;
+				pollutionData.m_NoisePollution = (destroyed ? 0f : (5f * (float)(buildingData.m_LotSize.x * buildingData.m_LotSize.y) * pollutionParameters.m_AbandonedNoisePollutionMultiplier));
 				componentData = pollutionData;
 			}
 			if ((abandoned || isPark) && renters.IsCreated)
@@ -592,8 +591,7 @@ namespace ExtMap57km.Systems
 			return componentData;
 		}
 
-		//改为public;
-		public static void CountRenters(out int count, out int education, DynamicBuffer<Renter> renters, ref BufferLookup<Employee> employees, ref BufferLookup<HouseholdCitizen> householdCitizens, ref ComponentLookup<Citizen> citizens, bool ignoreEmployees)
+		private static void CountRenters(out int count, out int education, DynamicBuffer<Renter> renters, ref BufferLookup<Employee> employees, ref BufferLookup<HouseholdCitizen> householdCitizens, ref ComponentLookup<Citizen> citizens, bool ignoreEmployees)
 		{
 			count = 0;
 			education = 0;

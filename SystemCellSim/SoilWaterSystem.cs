@@ -18,8 +18,8 @@ using Game.Simulation;
 
 namespace ExtMap57km.Systems
 {
-	//[CompilerGenerated]
-	public partial class SoilWaterSystem : CellMapSystem<SoilWater>, IJobSerializable, IPostDeserialize
+    //[CompilerGenerated]
+    public partial class SoilWaterSystem : CellMapSystem<SoilWater>, IJobSerializable, IPostDeserialize
 	{
 		[BurstCompile]
 		private struct SoilWaterTickJob : IJob
@@ -149,51 +149,50 @@ namespace ExtMap57km.Systems
 				{
 					SoilWater value3 = this.m_SoilWaterMap[j];
 					value3.m_Amount = (short)math.max(0, value3.m_Amount + tmp[j] + Mathf.RoundToInt(this.m_SoilWaterParameters.m_RainMultiplier * num3));
-					float surface = TerrainUtils.SampleHeight(ref this.m_TerrainHeightData, SoilWaterSystem.GetCellCenter(j));
-					value3.m_Surface = surface;
-					short num10 = (short)Mathf.RoundToInt(math.max(0f, 0.1f * (0.5f * (float)value3.m_Max - (float)value3.m_Amount)));
-					float x = (float)num10 * this.m_SoilWaterParameters.m_WaterPerUnit / (float)value3.m_Max;
-					int num11 = 0;
+					float num10 = (value3.m_Surface = TerrainUtils.SampleHeight(ref this.m_TerrainHeightData, SoilWaterSystem.GetCellCenter(j)));
+					short num11 = (short)Mathf.RoundToInt(math.max(0f, 0.1f * (0.5f * (float)value3.m_Max - (float)value3.m_Amount)));
+					float x = (float)num11 * this.m_SoilWaterParameters.m_WaterPerUnit / (float)value3.m_Max;
 					int num12 = 0;
-					float num13 = 0f;
+					int num13 = 0;
 					float num14 = 0f;
-					int num15 = j % SoilWaterSystem.kTextureSize * @int.x + j / SoilWaterSystem.kTextureSize * this.m_WaterSurfaceData.resolution.x * @int.y;
+					float num15 = 0f;
+					int num16 = j % SoilWaterSystem.kTextureSize * @int.x + j / SoilWaterSystem.kTextureSize * this.m_WaterSurfaceData.resolution.x * @int.y;
 					for (int k = 0; k < @int.x; k += 4)
 					{
 						for (int l = 0; l < @int.y; l += 4)
 						{
-							float depth = this.m_WaterSurfaceData.depths[num15 + k + l * this.m_WaterSurfaceData.resolution.z].m_Depth;
+							float depth = this.m_WaterSurfaceData.depths[num16 + k + l * this.m_WaterSurfaceData.resolution.z].m_Depth;
 							if (depth > 0.01f)
 							{
-								num11++;
-								num13 += math.min(this.m_SoilWaterParameters.m_MaximumWaterDepth, depth);
-								num14 += math.min(x, depth);
+								num12++;
+								num14 += math.min(this.m_SoilWaterParameters.m_MaximumWaterDepth, depth);
+								num15 += math.min(x, depth);
 							}
-							num12++;
+							num13++;
 						}
 					}
-					num10 = (short)Math.Min(num10, Mathf.RoundToInt((float)value3.m_Max * 10f * num14));
-					x = (float)num10 * this.m_SoilWaterParameters.m_WaterPerUnit / (float)value3.m_Max;
-					float num16 = (1f - num4 * num13 / (float)num12) * (float)value3.m_Max;
-					short num17 = (short)Mathf.RoundToInt(math.max(0f, this.m_SoilWaterParameters.m_OverflowRate * ((float)value3.m_Amount - num16)));
-					float num18 = 0f;
-					if ((float)num17 > 0f)
+					num11 = (short)Math.Min(num11, Mathf.RoundToInt((float)value3.m_Max * 10f * num15));
+					x = (float)num11 * this.m_SoilWaterParameters.m_WaterPerUnit / (float)value3.m_Max;
+					float num17 = (1f - num4 * num14 / (float)num13) * (float)value3.m_Max;
+					short num18 = (short)Mathf.RoundToInt(math.max(0f, this.m_SoilWaterParameters.m_OverflowRate * ((float)value3.m_Amount - num17)));
+					float num19 = 0f;
+					if ((float)num18 > 0f)
 					{
-						num18 = (float)value3.m_Amount / (float)value3.m_Max;
+						num19 = (float)value3.m_Amount / (float)value3.m_Max;
 						x = 0f;
 					}
-					if (num11 == 0)
+					if (num12 == 0)
 					{
 						x = 0f;
 					}
-					value3.m_Amount += num10;
-					value3.m_Amount -= num17;
-					short num19 = (short)Mathf.RoundToInt(math.sign(value3.m_Max / 8 - value3.m_Amount));
-					value3.m_Amount += num19;
-					num6 += num10 + Math.Max((short)0, num19);
-					num5 += num17 + Math.Max(0, -num19);
+					value3.m_Amount += num11;
+					value3.m_Amount -= num18;
+					short num20 = (short)Mathf.RoundToInt(math.sign(value3.m_Max / 8 - value3.m_Amount));
+					value3.m_Amount += num20;
+					num6 += num11 + Math.Max((short)0, num20);
+					num5 += num18 + Math.Max(0, -num20);
 					num7 += value3.m_Amount;
-					this.m_SoilWaterTextureData[j] = (0f - x) / (float)this.m_ShaderUpdatesPerSoilUpdate + num18;
+					this.m_SoilWaterTextureData[j] = (0f - x) / (float)this.m_ShaderUpdatesPerSoilUpdate + num19;
 					this.m_SoilWaterMap[j] = value3;
 				}
 				tmp.Dispose();
@@ -321,7 +320,7 @@ namespace ExtMap57km.Systems
 				this.m_SoilWaterTexture.Apply();
 				float value = this.m_ClimateSystem.precipitation.value;
 				int shaderUpdatesPerSoilUpdate = 262144 / (SoilWaterSystem.kUpdatesPerDay / SoilWaterSystem.kLoadDistribution) / this.m_WaterSystem.SimulationCycleSteps;
-				int loadDistributionIndex = (int)(this.m_SimulationSystem.frameIndex / (262144 / SoilWaterSystem.kUpdatesPerDay) % SoilWaterSystem.kLoadDistribution);
+				int loadDistributionIndex = (int)((long)this.m_SimulationSystem.frameIndex / (long)(262144 / SoilWaterSystem.kUpdatesPerDay) % SoilWaterSystem.kLoadDistribution);
 				this.__TypeHandle.__Game_Simulation_FloodCounterData_RW_ComponentLookup.Update(ref base.CheckedStateRef);
 				this.__TypeHandle.__Game_Prefabs_EventData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
 				this.__TypeHandle.__Game_Events_WaterLevelChange_RW_ComponentLookup.Update(ref base.CheckedStateRef);

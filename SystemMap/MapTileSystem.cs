@@ -45,13 +45,13 @@ namespace ExtMap57km.Systems
 				DynamicBuffer<Node> dynamicBuffer = this.m_NodeData[entity];
 				///vanilla;
 				//int2 @int = new int2(index % 23, index / 23);
-				//float2 @float = new float2(23f, 23f) * 311.65216f;
+				//float2 @float = new float2(23f, 23f) * 311.65216f;//v1.1.5f=311.652161f;
 				//Bounds2 bounds = default(Bounds2);
 				//bounds.min = (float2)@int * 623.3043f - @float;
 				//bounds.max = (float2)(@int + 1) * 623.3043f - @float;
 				///mod;
                 int2 @int = new int2(index % 92, index / 92);
-                float2 @float = new float2(92f, 92f) * 311.65216f;
+                float2 @float = new float2(92f, 92f) * 311.652161f;
                 Bounds2 bounds = default(Bounds2);
                 bounds.min = ((float2)@int * 623.3043f - @float);
                 bounds.max = ((float2)(@int + 1) * 623.3043f- @float);

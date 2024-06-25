@@ -192,7 +192,11 @@ namespace ExtMap57km
 
             World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.ZoneAmbienceSystem>();
             updateSystem.UpdateAfter<Systems.ZoneAmbienceSystem, ZoneAmbienceSystem>(SystemUpdatePhase.GameSimulation);
-            
+
+            //replaced by LandValueRemake
+            World.DefaultGameObjectInjectionWorld.GetOrCreateSystem<Systems.LandValueSystem>();
+            updateSystem.UpdateAfter<Systems.LandValueSystem, LandValueSystem>(SystemUpdatePhase.GameSimulation);
+
 
             //Cell ref Sys;
             ///Prefix mode;//单一系统引用，采取替换模式；
