@@ -4,8 +4,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.10.35004.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtMap57km", "ExtMap57km.csproj", "{31844299-E4BF-4260-AD45-36504F5351D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9BDFF50A-0634-46D8-98D8-2E15F8479C25} = {9BDFF50A-0634-46D8-98D8-2E15F8479C25}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtMap.Patcher", "..\ExtMap.Patcher\ExtMap.Patcher.csproj", "{9BDFF50A-0634-46D8-98D8-2E15F8479C25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtMap.Patcher", "..\ExtMap.Patcher\ExtMap.Patcher.csproj", "{9BDFF50A-0634-46D8-98D8-2E15F8479C25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
